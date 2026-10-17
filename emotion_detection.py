@@ -15,8 +15,28 @@ def emotion_detector(text_to_analyze):
     }
 
     response = requests.post(url, headers=headers, json=input_json)
-
+    
     if response.status_code == 200:
-        return response.text, 500
+        json_obj = response.json()
+
+        emotion_scores = json_obj["emotionPredictions"][0]["emotion"]
+        result = {
+            "anger": float(emotion_scores["anger"]),
+            "disgust": float(emotion_scores["disgust"]),
+            "fear": float(emotion_scores["fear"]),
+            "joy": float(emotion_scores["joy"]),
+            "sadness": float(emotion_scores["sadness"])
+        }
+        
+        largest = 0
+        dominant = ""
+        for key, value in result.items():
+            if value > largest:
+                largest = value
+                dominant = key
+
+        result["dominant_emotion"] = dominant
+
+        return result, 200
 
     return "A server error occurred and your request could not be processed!", 500
